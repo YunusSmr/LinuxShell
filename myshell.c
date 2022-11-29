@@ -5,7 +5,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-char *readLine()
+// read the parametres and fills the line array
+char *readPrm()
 {
 	char *line = (char *)malloc(sizeof(char) * 1024); //  Buffer Allocation
 	char read;
@@ -22,6 +23,7 @@ char *readLine()
 	while (1)
 	{
 		read = getchar();
+		// if char equals newline or end of line,changes with nullchar
 		if (read == end || read == newLine)
 		{
 			line[pos] = nullChar;
@@ -46,11 +48,11 @@ char *readLine()
 	}
 }
 
-// Input Function
-int takeInput(char *str)
+// Input Function , copy values to buf
+int input(char *str)
 {
 	char *buf;
-	buf = readLine();
+	buf = readPrm();
 	if (strlen(buf) != 0)
 	{
 		strcpy(str, buf);
@@ -61,19 +63,19 @@ int takeInput(char *str)
 		return 1;
 	}
 }
-// Clear Function
-void Clear()
+// Clears the myshell
+void clear()
 {
 	printf("\033[H\033[J");
 }
 
-// Echo Function
-void Echo(char *str)
+// cat Function ,just read the input
+void cat(char *str)
 {
-	printf("\nEcho : %s", str);
+	printf("\ncat : %s", str);
 }
-// Command Execution by file name
-void callWithFileName(char **parsed)
+// Command Execution by  name
+void executeWithPrm(char **parsed)
 {
 	// Child process
 	pid_t pid = fork();
@@ -85,6 +87,12 @@ void callWithFileName(char **parsed)
 	}
 	else if (pid == 0)
 	{
+		/*
+		char *argument_list[] = {"ls", "-l", NULL}; // NULL terminated array of char* strings
+		// Ok! Will execute the command "ls -l"
+		execvp("ls", argument_list);
+		*/
+
 		if (execvp(parsed[0], parsed) < 0)
 		{
 			printf("\nInvalid command..");
@@ -99,130 +107,72 @@ void callWithFileName(char **parsed)
 	}
 }
 
-// Run tekrar program
-void Tekrar(char **parsed)
+// print the menu ( commands)
+void menu()
 {
-	pid_t pid = fork();
-	char *path;
-	path = "tekrar";
-
-	if (pid == -1)
-	{
-		printf("\nFailed to fork");
-		return;
-	}
-	else if (pid == 0)
-	{
-		if (execv(path, parsed) < 0)
-		{
-			printf("\nInvalid command..");
-		}
-		exit(0);
-	}
-	else
-	{
-		// waiting for child to abort
-		wait(NULL);
-		return;
-	}
-}
-// Run Islem program
-void Islem(char **parsed)
-{
-	pid_t pid = fork();
-	char *path;
-	path = "islem";
-
-	if (pid == -1)
-	{
-		printf("\nFailed to fork");
-		return;
-	}
-	else if (pid == 0)
-	{
-		if (execv(path, parsed) < 0)
-		{
-			printf("\nInvalid command..");
-		}
-		exit(0);
-	}
-	else
-	{
-		// waiting for child to abort
-		wait(NULL);
-		return;
-	}
-}
-
-// Help command
-void Help()
-{
-	puts("\nCommands to use ..."
-		 "\n>echo -- prints arguments "
-		 "\n>ls -- lists files"
-		 "\n>exit -- exists from current program"
-		 "\n>clear -- Clear Screen"
-		 "\n>tekrar -- Custom program to repeat a string"
-		 "\n>bash -- Opens actual bash terminal"
-		 "\n>islem -- Choose an operation"
-		 "\n>pipe usage is unavailable");
-
+	printf("\n\n Write an command to use : "
+		   "\n--exit = Exit from myshell"
+		   "\n--bash = Opens bash terminal"
+		   "\n--execx = Execute execx (execx -t 5 writef -f isim)"
+		   "\n--cat = Prints arguments"
+		   "\n--clear = Clear Screen"
+		   "\n--ls = Lists files\n");
 	return;
 }
 
 // Function to execute builtin commands
-int commandExecution(char **parsed)
+int execute(char **parsed)
 {
 	int NumberOfCommands = 8;
 	int i;
-	int indicator = 0;
-	char *ListOfCommands[NumberOfCommands];
+	int index = 0;
+	char *Commands[NumberOfCommands];
 
-	ListOfCommands[0] = "exit";
-	ListOfCommands[1] = "echo";
-	ListOfCommands[2] = "help";
-	ListOfCommands[3] = "clear";
-	ListOfCommands[4] = "ls";
-	ListOfCommands[5] = "bash";
-	ListOfCommands[6] = "tekrar";
-	ListOfCommands[7] = "islem";
+	Commands[0] = "exit";
+	Commands[1] = "bash";
+	Commands[2] = "execx";
+	Commands[3] = "cat";
+	Commands[4] = "clear";
+	Commands[5] = "ls";
+	Commands[6] = "tekrar";
+	Commands[7] = "islem";
 
 	for (i = 0; i < NumberOfCommands; i++)
 	{
-		if (strcmp(parsed[0], ListOfCommands[i]) == 0)
+		if (strcmp(parsed[0], Commands[i]) == 0)
 		{
-			indicator = i + 1;
+			index = i + 1;
 			break;
 		}
 	}
 
-	switch (indicator)
+	switch (index)
 	{
 	case 1:
 		exit(0);
 	case 2:
-		Echo(parsed[1]);
+		executeWithPrm(parsed);
 		return 1;
 	case 3:
-		Help();
+		executeWithPrm(parsed);
 		return 1;
 	case 4:
-		Clear();
+		cat(parsed[1]);
 		return 1;
 	case 5:
-		callWithFileName(parsed);
+		clear();
 		return 1;
 	case 6:
-		callWithFileName(parsed);
+		executeWithPrm(parsed);
 		return 1;
 	case 7:
-		Tekrar(parsed);
+		
 		return 1;
 	case 8:
-		Islem(parsed);
+		
 		return 1;
 	default:
-		puts("Invalid Command");
+		printf("Invalid Command");
 		break;
 	}
 
@@ -246,15 +196,17 @@ void processString(char *str, char **parsed)
 
 int main()
 {
-	char inputString[1000], *Args[100];
+	char inputStr[1000], *Args[100];
 
 	while (1)
 	{
-		printf("myshell>>");
-		if (takeInput(inputString))
+
+		menu();
+		printf("\nmyshell>>");
+		if (input(inputStr))
 			continue;
-		processString(inputString, Args);
-		commandExecution(Args);
+		processString(inputStr, Args);
+		execute(Args);
 	}
 	return 0;
 }

@@ -16,13 +16,12 @@ int isNumber(char *prm)
     return 1;
 }
 // 0       1 2 3       4 5
-// execve -t 5 writef -f isim
+// execx -t 5 writef -f isim
 int main(int argc, char **argv)
 {
 
     if (argc != 6)
     {
-
         printf("Wrong number of parameters\n");
         printf("You entered  = %d \n", argc);
         exit(0);
