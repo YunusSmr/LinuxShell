@@ -19,7 +19,7 @@ int main(int argc, char **argv)
 
     if (argc != 3)
     {
-        printf("invalid number of paramter");
+        printf("invalid number of paramter\n");
         exit(0);
     }
 
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
     }
     else
     {
-        printf("Wrong input");
+        printf("Wrong input\n");
         exit(0);
     }
 
