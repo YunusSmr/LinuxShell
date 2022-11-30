@@ -77,6 +77,7 @@ void cat(char *str)
 // Command Execution by  name
 void executeWithPrm(char **parsed)
 {
+
 	// Child process
 	pid_t pid = fork();
 
@@ -92,7 +93,7 @@ void executeWithPrm(char **parsed)
 		// Ok! Will execute the command "ls -l"
 		execvp("ls", argument_list);
 		*/
-
+		printf("%s", parsed[0]);
 		if (execvp(parsed[0], parsed) < 0)
 		{
 			printf("\nInvalid command..");
@@ -123,7 +124,7 @@ void menu()
 // Function to execute builtin commands
 int execute(char **parsed)
 {
-	int NumberOfCommands = 8;
+	int NumberOfCommands = 6;
 	int i;
 	int index = 0;
 	char *Commands[NumberOfCommands];
@@ -134,11 +135,10 @@ int execute(char **parsed)
 	Commands[3] = "cat";
 	Commands[4] = "clear";
 	Commands[5] = "ls";
-	Commands[6] = "tekrar";
-	Commands[7] = "islem";
 
 	for (i = 0; i < NumberOfCommands; i++)
 	{
+
 		if (strcmp(parsed[0], Commands[i]) == 0)
 		{
 			index = i + 1;
@@ -154,7 +154,7 @@ int execute(char **parsed)
 		executeWithPrm(parsed);
 		return 1;
 	case 3:
-		executeWithPrm(parsed);
+		execx();
 		return 1;
 	case 4:
 		cat(parsed[1]);
@@ -165,12 +165,7 @@ int execute(char **parsed)
 	case 6:
 		executeWithPrm(parsed);
 		return 1;
-	case 7:
-		
-		return 1;
-	case 8:
-		
-		return 1;
+
 	default:
 		printf("Invalid Command");
 		break;
@@ -194,6 +189,38 @@ void processString(char *str, char **parsed)
 	}
 }
 
+// 0       1 2 3       4 5
+// execx -t 5 writef -f isim
+void execx()
+{
+	printf("\nWrite the paramters : \n"
+		   "Example : \nexecx -t 5 writef -f nameOfFile ");
+	char inputStr[1000], *Args[100];
+
+	printf("\nmyshell>>");
+	input(inputStr);
+	processString(inputStr, Args);
+
+	pid_t pid = fork();
+
+	if (pid == -1)
+	{
+		printf("\nFailed to fork");
+		exit(EXIT_FAILURE);
+	}
+	else if (pid == 0)
+	{
+		if (execv(Args[0], Args) < 0)
+		{
+			printf("\nInvalid command..");
+		}
+	}
+	else
+	{
+		// waiting for child to abort
+		wait(&pid);
+	}
+}
 int main()
 {
 	char inputStr[1000], *Args[100];

@@ -87,7 +87,7 @@ int main(int argc, char **argv)
         pid = fork();
         printf("fork\n");
         if (pid == -1){
-            printf("anan öldü\n");
+            printf("Parent öldü\n");
             exit(0);
 
         }else if ( pid == 0){
